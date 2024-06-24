@@ -22,10 +22,12 @@ for i in range(len(files)):
                 continue
             elems = lineStripped.split('/')
             
+            elems[0] = elems[0].replace(" ","")
             valueList = elems[0].strip("()").split(",")
             value = tuple(map(float, valueList))
             data["trueVector"].append(value) 
             
+            elems[1] = elems[1].replace(" ","")
             valueList = elems[1].strip("()").split(",")
             value = tuple(map(float, valueList))
             data["inputVector"].append(value)
@@ -44,7 +46,7 @@ for i in range(len(files)):
             
         datum.append(data)
 
-print(datum)
+print(len(datum))
 
 # ANGLE NORMAL DISTRIBUTION 
 angles_3D, angles_2D = [], []
@@ -55,12 +57,12 @@ for i in range(len(datum)):
     elif datum[i]['dim'] == '2D':
         for j in range(len(datum[i]['angle'])):
             angles_2D.append(datum[i]['angle'][j])
-        
-angleMu_3D = np.sum(angles_3D) / len(angles_3D)
-angleStd_3D = np.std(angles_3D)
 
-angleMu_2D = np.sum(angles_2D) / len(angles_2D)
-angleStd_2D = np.std(angles_2D)
+angleDiffAverage_3D = np.sum(angles_3D) / len(angles_3D)
+angleDiffStd_3D = np.std(angles_3D)
+
+angleDiffAverage_2D = np.sum(angles_2D) / len(angles_2D)
+angleDiffStd_2D = np.std(angles_2D)
 
 # LONGITUDE - LATITTUDE 
 rotation_3D, rotation_2D = [], [] # (경도 가로, 위도 세로) tuple as element
@@ -74,35 +76,30 @@ for i in range(len(datum)):
         for j in range(len(datum[i]['longitude'])):
             rotation_2D.append((datum[i]['longitude'][j], datum[i]['latitude'][j]))
             
-# TIME NORMAL DISTRIBUTION
+# TIME DIFFERENCE NORMAL DISTRIBUTION
 timeDiff_3D, timeDiff_2D = [], [] 
 
 for i in range(len(datum)):
     if datum[i]['dim'] == '3D':
         for j in range(len(datum[i]['time'])):
             if j == 0:
-                timeDiff_3D.append(datum[i]['time'][j])
                 continue
-            timeDiff_3D.append(datum[i]['time'][j] - datum[i]['time'][j-1])
+            timeDiff_3D.append((datum[i]['time'][j] - datum[i]['time'][j-1]) * 0.001)
             
     if datum[i]['dim'] == '2D':
         for j in range(len(datum[i]['time'])):
             if j == 0:
                 timeDiff_2D.append(datum[i]['time'][j])
                 continue
-            timeDiff_2D.append(datum[i]['time'][j] - datum[i]['time'][j-1])
+            timeDiff_2D.append((datum[i]['time'][j] - datum[i]['time'][j-1]) * 0.001)
             
-timeMu_3D = np.sum(timeDiff_3D) / len(timeDiff_3D)
-timeStd_3D = np.std(timeDiff_3D)
+timeGapAverage_3D = np.sum(timeDiff_3D) / len(timeDiff_3D) 
+timeGapStd_3D = np.std(timeDiff_3D) 
 
-timeMu_2D = np.sum(timeDiff_2D) / len(timeDiff_2D)
-timeStd_2D = np.std(timeDiff_2D)
-    
-#NormalDistribution()
+timeGapAverage_2D = np.sum(timeDiff_2D) / len(timeDiff_2D)
+timeGapStd_2D = np.std(timeDiff_2D)
+ 
+# Select one of 2 methods below and comment the other one.   
+PointPlot(rotation_3D, rotation_2D)
+#NormalDistribution(angleDiffAverage_3D, angleDiffStd_3D, angleDiffAverage_2D, angleDiffStd_2D)
 
-coordinates = [ # Test coordinates
-    (126.978, 37.566),  # 서울의 위도, 경도
-    (139.6917, 35.6895),  # 도쿄의 위도, 경도
-    (2.3522, 48.8566)  # 파리의 위도, 경도
-]
-PointPlot(coordinates)
