@@ -46,8 +46,15 @@ for i in range(len(files)):
 
 print(datas)
 
-mu = 0 # Average value 
-sigma = 1 # Standard Deviation
+angleLen = 0
+angleSum = 0
+for i in range(datas):
+    angleLen += len(datas['angle'])
+    for j in range(len(datas['angle'])):
+        angleSum += datas["angle"][j]
+
+mu = angleSum / angleLen # Average value 
+sigma = 1 # Standard Deviation TODO 
 
 data = np.random.normal(mu, sigma, 10)
 
