@@ -1,11 +1,12 @@
 import numpy as np 
 from matplotlib import pyplot as plt
 import os, os.path
+from PlotGraphs import *
 
 # TestData_n.txt
 # Find if it's test for 2d or 3d searching for the first line of txt file 
 
-datas = [] # n files 
+datum = [] # n files 
 
 DIR = './Data'
 files = [name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))]
@@ -19,7 +20,6 @@ for i in range(len(files)):
             if lineStripped == "3D" or lineStripped == "2D":
                 data["dim"] = lineStripped
                 continue
-            
             elems = lineStripped.split('/')
             
             valueList = elems[0].strip("()").split(",")
@@ -42,29 +42,67 @@ for i in range(len(files)):
             value = float(elems[5])
             data["angle"].append(value) 
             
-        datas.append(data)
+        datum.append(data)
 
-print(datas)
+print(datum)
 
-angleLen = 0
-angleSum = 0
-for i in range(datas):
-    angleLen += len(datas['angle'])
-    for j in range(len(datas['angle'])):
-        angleSum += datas["angle"][j]
+# ANGLE NORMAL DISTRIBUTION 
+angles_3D, angles_2D = [], []
+for i in range(len(datum)):
+    if datum[i]['dim'] == '3D':
+        for j in range(len(datum[i]['angle'])):
+            angles_3D.append(datum[i]['angle'][j])
+    elif datum[i]['dim'] == '2D':
+        for j in range(len(datum[i]['angle'])):
+            angles_2D.append(datum[i]['angle'][j])
+        
+angleMu_3D = np.sum(angles_3D) / len(angles_3D)
+angleStd_3D = np.std(angles_3D)
 
-mu = angleSum / angleLen # Average value 
-sigma = 1 # Standard Deviation TODO 
+angleMu_2D = np.sum(angles_2D) / len(angles_2D)
+angleStd_2D = np.std(angles_2D)
 
-data = np.random.normal(mu, sigma, 10)
+# LONGITUDE - LATITTUDE 
+rotation_3D, rotation_2D = [], [] # (경도 가로, 위도 세로) tuple as element
 
-#plt.hist(data, bins=30, density=True, alpha=0.6, color='b')
+for i in range(len(datum)):
+    if datum[i]['dim'] == '3D':
+        for j in range(len(datum[i]['longitude'])):
+            rotation_3D.append((datum[i]['longitude'][j], datum[i]['latitude'][j]))
 
-x = np.linspace(-5, 5, 100)
-pdf = (1/(sigma * np.sqrt(2*np.pi))) * np.exp(-(x-mu)**2 / (2 * sigma**2))
-plt.plot(x, pdf, 'r-', lw=2)
+    elif datum[i]['dim'] == '2D':
+        for j in range(len(datum[i]['longitude'])):
+            rotation_2D.append((datum[i]['longitude'][j], datum[i]['latitude'][j]))
+            
+# TIME NORMAL DISTRIBUTION
+timeDiff_3D, timeDiff_2D = [], [] 
 
-plt.title("Normal Distribution")
-plt.xlabel("value")
-plt.ylabel("Density")
-plt.show() 
+for i in range(len(datum)):
+    if datum[i]['dim'] == '3D':
+        for j in range(len(datum[i]['time'])):
+            if j == 0:
+                timeDiff_3D.append(datum[i]['time'][j])
+                continue
+            timeDiff_3D.append(datum[i]['time'][j] - datum[i]['time'][j-1])
+            
+    if datum[i]['dim'] == '2D':
+        for j in range(len(datum[i]['time'])):
+            if j == 0:
+                timeDiff_2D.append(datum[i]['time'][j])
+                continue
+            timeDiff_2D.append(datum[i]['time'][j] - datum[i]['time'][j-1])
+            
+timeMu_3D = np.sum(timeDiff_3D) / len(timeDiff_3D)
+timeStd_3D = np.std(timeDiff_3D)
+
+timeMu_2D = np.sum(timeDiff_2D) / len(timeDiff_2D)
+timeStd_2D = np.std(timeDiff_2D)
+    
+#NormalDistribution()
+
+coordinates = [ # Test coordinates
+    (126.978, 37.566),  # 서울의 위도, 경도
+    (139.6917, 35.6895),  # 도쿄의 위도, 경도
+    (2.3522, 48.8566)  # 파리의 위도, 경도
+]
+PointPlot(coordinates)
